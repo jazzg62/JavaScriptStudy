@@ -1,0 +1,101 @@
+<!--
+ * @Author: victorsun
+ * @Date: 2019-04-07 16:06:19
+ * @LastEditors: victorsun - csxiaoyao
+ * @LastEditTime: 2020-03-15 16:55:59
+ * @Description: sunjianfeng@csxiaoyao.com
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>es6</title>
+</head>
+<body>
+<script>
+// Promise对象异步操作三种状态：pending（进行中）、fulfilled（已成功）和 rejected（已失败）
+//   then 方法将返回一个 resolved 或 rejected 状态的 Promise 对象用于链式调用，且 Promise 对象的值就是这个返回值
+const p = new Promise(function(resolve,reject){
+    resolve(1);
+}).then(function(value){ // 第一个then，resolve/reject传值 // 1
+    console.log(value);
+    return value * 2;
+}).then(function(value){ // 第二个then，then-return传值 // 2
+    console.log(value);
+}).then(function(value){ // 第三个then，没有return，没有传值 // undefined
+    console.log(value);
+    return Promise.resolve('resolve'); // !!! Promise 静态方法，可以用来处理静态数据
+}).then(function(value){ // 第四个then，Promise.resolve传值 // resolve
+    console.log(value);
+    return Promise.reject('reject'); // !!! Promise 静态方法，可以用来处理静态数据
+}).then(function(value){ // 第五个then，Promise.reject传值 // reject:reject
+    console.log('resolve:' + value);
+}, function(err) {
+    console.log('reject:' + err);
+});
+
+// then 可以传两个参数，成功回调和失败回调
+//【注意】两个回调都是函数func，如果传的不是函数，例如 func()返回值，那么 then 返回的是空Promise对象（会走到下一个成功回调），用于链式调用
+// func 普通的返回会走到下一个 then 的成功回调
+// 若想走到下一个 then 的失败回调
+//    需要返回 Promise 的 reject，如 new Promise((resolve, reject) => { reject() })
+//    或者使用静态方法 Promise.reject()
+
+/**
+ * Promise.all
+ * 并行处理
+ */
+const p1 = Promise.resolve(1)
+const p2 = Promise.resolve(2)
+const p3 = Promise.resolve(3)
+Promise.all([p1, p2, p3]).then(value => {
+    console.log(value) // [1, 2, 3]
+})
+
+/**
+ * Promise.race
+ * 先到先得，如cdn静态资源处理
+ */
+const p4 = () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(1)
+        }, 1000)
+    })
+}
+const p5 = () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(2)
+        }, 500)
+    })
+}
+Promise.race([p4(), p5()]).then((value) => {
+    console.log(value) // 2
+})
+
+/**
+ * ES9升级
+ * finally
+ */
+const Gen = (time) => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (time < 500) {
+                reject(time)
+            } else {
+                resolve(time)
+            }
+        }, time)
+    })
+}
+Gen(Math.random() * 1000)
+    .then(val => console.log('resolve ', val))
+    .catch(err => console.log('reject ', err))
+    .finally(() => { console.log('finish') })
+
+</script>
+</body>
+</html>
